@@ -15,10 +15,10 @@ function processResult(resJson, cloudant) {
         resJson.forEach(function(stockEntry) {
             var ticker = stockEntry.ticker;
 
-            if (ticker != 'TCL' && ticker != 'CBA' && ticker != 'COH' && ticker != 'ANZ' && ticker != 'WBC') {
+            //if (ticker != 'TCL' && ticker != 'CBA' && ticker != 'COH' && ticker != 'ANZ' && ticker != 'WBC') {
                 //console.log('not inwhite list', ticker);
-                return; // limit tickers for now
-            }
+                //return; // limit tickers for now
+            //}
             //console.log('ok ticker', ticker);
 
             var dbname = 'stock_'+ticker.toLowerCase();
