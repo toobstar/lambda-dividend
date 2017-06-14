@@ -10,14 +10,16 @@ var apiPassword = process.env.cloudant_api_password;
 var priceUrl =    process.env.priceUrl;
 
 function processResult(resJson, cloudant) {
-
+    //console.log('processResult', resJson);
     cloudant.db.list().then(function(existingDbs) {
         resJson.forEach(function(stockEntry) {
             var ticker = stockEntry.ticker;
 
-            if (ticker != 'BHP' && ticker != 'CBA' && ticker != 'COH' && ticker != 'ANZ' && ticker != 'WBC') {
+            if (ticker != 'TCL' && ticker != 'CBA' && ticker != 'COH' && ticker != 'ANZ' && ticker != 'WBC') {
+                //console.log('not inwhite list', ticker);
                 return; // limit tickers for now
             }
+            //console.log('ok ticker', ticker);
 
             var dbname = 'stock_'+ticker.toLowerCase();
 
@@ -56,28 +58,26 @@ function processResult(resJson, cloudant) {
 
 function processStockForDb(stockEntry, db) {
     console.log('processStockForDb', stockEntry);
-    db.get(priceKey(stockEntry)).then(function(data) {
+    db.get(dividendKey(stockEntry)).then(function(data) {
         console.log("value already existing");
         completeForStock(stockEntry, db);
     }).catch(function(err) {
-        insertPrice(stockEntry, db);
+        insertDividend(stockEntry, db);
     });
 }
 
-function priceKey(stockEntry) {
-    return 'price_' + stockEntry.date;
-}
-function insertPrice(stockEntry, db) {
-    var pk = priceKey(stockEntry);
-    var minData = {};
-    minData.date = stockEntry.date;
-    minData.close = stockEntry.close;
-    if (stockEntry.split && stockEntry.split.length  > 0) {
-        minData.split = stockEntry.split;
+function dividendKey(stockEntry) {
+    if (stockEntry.ex) {
+        return 'dividend_' + stockEntry.ex;
     }
-
-    console.log("insertPrice", pk, minData);
-    db.insert(minData, pk).then(function(data) {
+    else {
+        return 'dividend_' + stockEntry.pay;
+    }
+}
+function insertDividend(stockEntry, db) {
+    var pk = dividendKey(stockEntry);
+    console.log("insertDividend", pk, stockEntry);
+    db.insert(stockEntry, pk).then(function(data) {
         console.log('you have inserted stockEntry.', data);
         completeForStock(stockEntry, db);
     }).catch(function(err) {
@@ -87,7 +87,7 @@ function insertPrice(stockEntry, db) {
 }
 
 function completeForStock(stockEntry, db) {
-    var pk = priceKey(stockEntry);
+    var pk = dividendKey(stockEntry);
     console.log('completeForStock', pk);
     db.get(pk).then(function(data) {
         console.log('validating', data);
@@ -114,4 +114,4 @@ exports.handler = function (event, context, callback) {
     // callback( 'some error type' );
 };
 
-exports.handler(); // just for local testing
+//exports.handler(); // just for local testing

@@ -1,15 +1,15 @@
 {
-  "name": "lambda-price",
+  "name": "lambda-dividend",
   "version": "0.0.1",
-  "description": "Fetch prices from provided API then stored them in cloud based DB service",
+  "description": "Fetch dividends from provided API then stored them in cloud based DB service",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/toobstar/lambda-price.git"
+    "url": "git://github.com/toobstar/lambda-dividend.git"
   },
   "author": "toby vidler",
   "license": "ISC",
-  "homepage": "https://github.com/toobstar/lambda-price",
+  "homepage": "https://github.com/toobstar/lambda-dividend",
   "scripts": {
     "setup": "./node_modules/.bin/node-lambda setup",
     "test": "./node_modules/.bin/node-lambda run",
