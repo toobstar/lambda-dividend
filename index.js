@@ -9,6 +9,10 @@ var apiKey =      process.env.cloudant_api_key;
 var apiPassword = process.env.cloudant_api_password;
 var priceUrl =    process.env.priceUrl;
 
+// [
+//  {"ticker":"TCL","ex":"2017-06-29","pay":"2017-08-11","rate":"0.27","franking":"13.21"},
+//  {"ticker":"SYD","ex":"2017-06-29","pay":"2017-08-14","rate":"0.17","franking":"0.00"}
+// ]
 function processResult(resJson, cloudant) {
     //console.log('processResult', resJson);
     cloudant.db.list().then(function(existingDbs) {
