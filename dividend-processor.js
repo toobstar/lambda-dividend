@@ -70,26 +70,7 @@ function processEntry(cloudant, ticker, existingDbs, stockEntry) {
         processStockForDb(stockEntry, db);
     }
     else {
-        console.log('dbname-creating', dbname);
-        cloudant.db.create(dbname).then(function (data) {
-            console.log("create result", dbname, data);
-            db = cloudant.db.use(dbname);
-            var security = {
-                nobody: [],
-                hologratchartheshourster: ['_reader', '_replicator'],
-                toobstar: ['_reader', '_writer', '_admin', '_replicator'],
-                apiKey: ['_reader', '_writer', '_admin', '_replicator']
-            };
-            db.set_security(security, function (er, result) {
-                if (er) {
-                    throw er;
-                }
-                console.log("set_security result", result);
-                processStockForDb(stockEntry, db);
-            });
-        }).catch(function (err) {
-            console.log('create db error ', dbname, err);
-        });
+        console.log('dbname doesnt exist.  Should be created via price process or alternative?', dbname);
     }
 }
 
