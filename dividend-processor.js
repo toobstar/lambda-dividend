@@ -17,9 +17,9 @@ function processBulk(resJson, cloudant) {
         var dataArray = resJson.dataArray;
 
         //if (ticker != 'BHP' && ticker != 'CBA' && ticker != 'COH' && ticker != 'ANZ' && ticker != 'TCL') {
-        if (ticker != 'CBA') {
-            return; // limit tickers for now
-        }
+        //if (ticker != 'CBA') {
+        //    return; // limit tickers for now
+        //}
 
         if (!ticker) {
             console.log('missing ticker in input for ', resJson);
@@ -42,12 +42,12 @@ function processResult(resJson, cloudant) {
             var ticker = stockEntry.ticker;
 
             //if (ticker != 'BHP' && ticker != 'CBA' && ticker != 'COH' && ticker != 'ANZ' && ticker != 'TCL') {
-            if (ticker != 'CBA') {
-                return; // limit tickers for now
-            }
+            //if (ticker != 'TCL') {
+            //    return; // limit tickers for now
+            //}
 
             if (!ticker) {
-                console.log('missing ticker in input for ', resJson);
+                console.log('missing ticker in input for ', stockEntry);
                 return;
             }
             count++;
@@ -74,32 +74,33 @@ function processEntry(cloudant, ticker, existingDbs, stockEntry) {
     }
 }
 
-function processStockForDb(updatedPriceArray, db) {
-    console.log('processStockForDb', updatedPriceArray  );
+function processStockForDb(updatedDividendArray, db) {
+    console.log('processStockForDb', updatedDividendArray  );
     db.get(dataKey()).then(function(data) {
-        var existingPriceArray = data.dataArray;
-        if (existingPriceArray) {
+        var existingDividendArray = data.dataArray;
+        if (existingDividendArray) {
             console.log("values already existing", data.dataArray.length);
-            existingPriceArray = data.dataArray;
+            existingDividendArray = data.dataArray;
         }
         else {
             console.log("creating new data array");
         }
 
-        var existingPriceMap = existingPriceArray.reduce(function(result, item) {
-            //console.log("switch data to be mapped by key", item.ex);
+        var existingPriceMap = existingDividendArray.reduce(function(result, item) {
+            console.log("switch data to be mapped by key", item.ex);
             result[item.ex] = item;
             return result;
         }, {});
 
         //[{"ticker":"TCL","ex":"2017-06-29","pay":"2017-08-11","rate":"0.27","franking":"13.21"}
         // overwrite existing from input
-        updatedPriceArray.forEach(function(elem) {
-            console.log("testing ", elem.franking, typeof elem.franking);
-            if (typeof elem.franking != "number") {
+        updatedDividendArray.forEach(function(elem) {
+            console.log("overwrite existing from input ", elem);
+            if (elem.franking && typeof elem.franking != "number") {
+                console.log("testing ", elem.franking, typeof elem.franking);
                 rateelem.franking = parseFloat(elem.franking);
             }
-            if (typeof elem.rate != "number") {
+            if (elem.rate && typeof elem.rate != "number") {
                 elem.rate = parseFloat(elem.rate);
             }
             var existingEntry = existingPriceMap[elem.ex];
@@ -114,24 +115,34 @@ function processStockForDb(updatedPriceArray, db) {
                 existingEntry.rate = elem.rate;
                 existingEntry.franking = elem.franking;
             }
+            delete existingEntry.ticker;
         });
 
         // turn updated existingPriceMap back into dataArray
         var updatedDataArray = [];
-        for (var date in existingPriceMap) {
-            if (existingPriceMap.hasOwnProperty(date)) {
-                updatedDataArray.push(existingPriceMap[date]);
+        for (var exDate in existingPriceMap) {
+            if (existingPriceMap.hasOwnProperty(exDate)) {
+                updatedDataArray.push(existingPriceMap[exDate]);
             }
         }
+        updatedDataArray.sort(compareByEx);
         data.dataArray = updatedDataArray;
 
         insertPrice(data, db);
     }).catch(function(err) {
         var data = {};
-        data.dataArray = updatedPriceArray;
-        console.log("nothing existing so initialising data from input ", updatedPriceArray.length);
+        data.dataArray = updatedDividendArray;
+        console.log("nothing existing so initialising data from input ", updatedDividendArray.length);
         insertPrice(data, db);
     });
+}
+
+function compareByEx(a,b) {
+    if (a.ex < b.ex)
+        return -1;
+    if (a.ex > b.ex)
+        return 1;
+    return 0;
 }
 
 function dataKey() {
